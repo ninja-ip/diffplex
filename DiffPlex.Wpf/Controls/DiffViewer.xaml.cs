@@ -18,6 +18,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+using DiffPlex.Chunkers;
 using DiffPlex.DiffBuilder;
 using DiffPlex.DiffBuilder.Model;
 
@@ -723,6 +724,11 @@ public partial class DiffViewer : UserControl
     }
 
     /// <summary>
+    /// The property of a Word Chunker to be used.
+    /// </summary>
+    public IChunker WordChunker { get; set; }
+
+    /// <summary>
     /// Gets a value indicating whether the grid splitter has logical focus and mouse capture and the left mouse button is pressed.
     /// </summary>
     public bool IsSplitterDragging => Splitter.IsDragging;
@@ -939,7 +945,22 @@ public partial class DiffViewer : UserControl
             return;
         }
 
-        sideBySideResult = SideBySideDiffBuilder.Diff(OldText, NewText, IgnoreWhiteSpace, IgnoreCase);
+        if (this.WordChunker == null)
+        {
+            sideBySideResult = SideBySideDiffBuilder.Diff(OldText, NewText, IgnoreWhiteSpace, IgnoreCase);
+        }
+        else
+        {
+            sideBySideResult =
+                SideBySideDiffBuilder.Diff(
+                    Differ.Instance,
+                    OldText,
+                    NewText,
+                    IgnoreWhiteSpace,
+                    IgnoreCase,
+                    LineChunker.Instance,
+                    this.WordChunker);
+        }
         RenderSideBySideDiffs();
     }
 
